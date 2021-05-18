@@ -1,0 +1,9 @@
+{
+	"name": "bags-adf",
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "3d28f67c-89bc-4388-9ed9-fe180efa31ac",
+		"tenantId": "dc973e1f-dbe2-4e02-9842-897a3eb1fee9"
+	}
+}

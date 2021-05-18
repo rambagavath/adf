@@ -1,0 +1,16 @@
+{
+	"name": "Country",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MySql1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "MySqlTable",
+		"schema": [],
+		"typeProperties": {
+			"tableName": "`country`"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
