@@ -884,6 +884,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Read JSON from CosmosDB')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP(10) * \nFROM OPENROWSET('CosmosDB',\n                'Account=adventurework-sql;\nDatabase=AdventureWorks;\nKey=pRm30NZbE879vZa…Euw=='\n                ,Customer) AS Customer\n\n\nCREATE VIEW Customers\nAS\nSELECT *\n    FROM OPENROWSET('CosmosDB',\n                    'Account=adventureworks-sql;\nDatabase=AdventureWorks;\nKey=NZbE879vZa…Euw==',\n                    Customer) \n            WITH \n            (\n                    CustomerId varchar(max) '$.id',\n                    Title varchar(max) '$.title',\n                    FirstName varchar(max) '$.firstName',\n                    LastName varchar(max) '$.lastName',\n                    EmailAddress varchar(max) '$.emailAddress',\n                    PhoneNumber varchar(max) '$.phoneNumber',\n                    AddressLine1 varchar(max) '$.address.addressLine1',\n                    AddressLine2 varchar(max) '$.address.addressLine2',\n                    City varchar(max) '$.address.city',\n                    Country varchar(max) '$.address.country',\n                    ZipCode varchar(max) '$.address.zipCode'\n            )\n                    AS Customers\n\nCREATE VIEW SalesOrderDetails\nAS\nSELECT SalesOrderId, SalesOrderArray.[key]+1 as SalesOrderLine, SKUCode, SKUName,Price, Quantity\n   FROM OPENROWSET('CosmosDB',\n                'Account=adventureworks-mongodb;Database=AdventureWorks;\n                Key=v2mtZ85W0AMCv1ZrY7jMUOWpfBTi1BrUz0Y3Rwmvj9SXSSIKDU7EQVu5kdEMcwAQfvJBnmHSMyxy50c3gD3v4g==',\n                SalesOrder) \n                    WITH \n                    (   SalesOrderId varchar(max) '$._id.string', \n                        details varchar(max) '$.details.array'\n                    )  As SalesOrders \n        CROSS APPLY OPENJSON(SalesOrders.details) AS SalesOrderArray\n            CROSS APPLY OPENJSON(SalesOrderArray.[value]) \n            WITH\n                (SKUCode varchar(max) '$.object.sku.string',\n                SKUName varchar(max)    '$.object.name.string',\n                Price decimal(10,4) '$.object.price.float64' ,\n                Quantity int    '$.object.quantity.int32'\n            ) As SalesOrderDetails\n\n\n\nCREATE VIEW SalesOrderStats\nAS\nSELECT\n      o.Country, o.City,\n      COUNT(DISTINCT o.CustomerId) Total_Customers,\n      COUNT(DISTINCT d.SalesOrderId) Total_Orders,\n      COUNT(d.SalesOrderId) Total_OrderLines,\n      SUM(d.Quantity*d.Price) AS Total_Revenue,\n      dense_rank() OVER (ORDER BY SUM(d.Quantity*d.Price) DESC) as Rank_Revenue,\n      dense_rank() OVER (ORDER BY COUNT(DISTINCT d.SalesOrderId) DESC) as Rank_Orders,\n      dense_rank() OVER (ORDER BY COUNT(d.SalesOrderId) DESC) as Rank_OrderLines,\n      dense_rank() OVER (PARTITION BY o.Country ORDER BY SUM(d.Quantity*d.Price) DESC) as Rank_Revenue_Country\nFROM SalesOrders o\n INNER JOIN SalesOrderDetails d\n    ON o.SalesOrderId = d.SalesOrderId\nWHERE Country IS NOT NULL OR City IS NOT NULL\nGROUP BY o.Country, o.City\nGO\n\nSELECT * FROM SalesOrderStats\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -1589,8 +1609,7 @@
 				"metadata": {
 					"saveOutput": true,
 					"synapse_widget": {
-						"version": "0.1",
-						"state": {}
+						"version": "0.1"
 					},
 					"kernelspec": {
 						"name": "synapse_pyspark",
@@ -1611,15 +1630,12 @@
 						"sparkVersion": "2.4",
 						"nodeCount": 10,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
-					},
-					"sessionKeepAliveTimeout": 30
+						"memory": 28
+					}
 				},
 				"cells": [
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"df = (spark.read \\\r\n",
 							"        .option('inferSchema', 'true') \\\r\n",
@@ -1752,19 +1768,6 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"preventDataExfiltration": false
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"metadata": {
-						"language": "sql"
-					}
-				}
 			},
 			"dependsOn": []
 		}
