@@ -22,55 +22,11 @@
 		"metadata": {
 			"saveOutput": true,
 			"synapse_widget": {
-				"version": "0.1",
-				"state": {
-					"b9071304-22e9-407e-ae56-e63d6787141f": {
-						"type": "Synapse.DataFrame",
-						"sync_state": {
-							"table": {
-								"rows": [
-									{
-										"customerId": 201582644,
-										"variantId": 713941,
-										"quantity": 5
-									},
-									{
-										"customerId": 201582644,
-										"variantId": 613941,
-										"quantity": 1
-									}
-								],
-								"schema": {
-									"customerId": "bigint",
-									"variantId": "bigint",
-									"quantity": "bigint"
-								}
-							},
-							"isSummary": false,
-							"language": "scala"
-						},
-						"persist_state": {
-							"view": {
-								"type": "details",
-								"chartOptions": {
-									"chartType": "bar",
-									"aggregationType": "sum",
-									"categoryFieldKeys": [
-										"variantId"
-									],
-									"seriesFieldKeys": [
-										"customerId"
-									],
-									"isStacked": false
-								}
-							}
-						}
-					}
-				}
+				"version": "0.1"
 			},
 			"kernelspec": {
 				"name": "synapse_pyspark",
-				"display_name": "Synapse PySpark"
+				"display_name": "python"
 			},
 			"language_info": {
 				"name": "python"
@@ -88,8 +44,9 @@
 				"nodeCount": 10,
 				"cores": 4,
 				"memory": 28,
-				"extraHeader": null
-			}
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
 			{
@@ -102,7 +59,6 @@
 					"\r\n",
 					"df.printSchema()"
 				],
-				"attachments": null,
 				"execution_count": 1
 			},
 			{
@@ -125,7 +81,6 @@
 					"flat=df.select('customerId',explode('items').alias('items_flat'))\r\n",
 					"flat.show(100)"
 				],
-				"attachments": null,
 				"execution_count": 2
 			},
 			{
@@ -148,7 +103,6 @@
 					"\r\n",
 					"topPurchases.show(100)"
 				],
-				"attachments": null,
 				"execution_count": 3
 			},
 			{
@@ -175,7 +129,6 @@
 					"\r\n",
 					"display(sortedTopPurchases.limit(100))"
 				],
-				"attachments": null,
 				"execution_count": 7
 			},
 			{
@@ -196,9 +149,10 @@
 					"from pyspark.sql import functions as f\r\n",
 					"\r\n",
 					"a = sortedTopPurchases.select('customerId').groupBy('customerId').agg(f.count('*').alias('VariantCnt')).orderBy('customerId')\r\n",
-					"a.show(100)"
+					"a.show(100)\r\n",
+					"\r\n",
+					"display(dfCustomer.groupBy(\"address.country\",\"address.city\").count().orderBy(\"count\",  ascending=False).limit(10))"
 				],
-				"attachments": null,
 				"execution_count": 18
 			}
 		]
